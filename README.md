@@ -1,2 +1,6 @@
 # solucionador-sudoku-ia
-Solucionador de sudoku con IA
+
+1. Instalar Python 3.9
+2. Crear el entorno virtual
+3. Instalar dependencias
+
