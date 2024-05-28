@@ -17,8 +17,8 @@ class Lata(pygame.sprite.Sprite):
         self.SONIDO_LATA = "sonidos/coin.ogg" 
         self.SONIDO_ERROR = "sonidos/error.ogg" 
         
-        self.VELOCIDAD_Y_MIN_OBJETO = 2
-        self.VELOCIDAD_Y_MAX_OBJETO = 4
+        self.VELOCIDAD_Y_MIN = 2
+        self.VELOCIDAD_Y_MAX = 4
                 
         self.imagen_aleatoria = random.choice(self.SPRITES_LATAS)
         self.image = self.imagen_aleatoria.convert_alpha()
@@ -26,7 +26,7 @@ class Lata(pygame.sprite.Sprite):
         self.rect.x = random.randint(0, (Ventana().ANCHO_VENTANA) - self.rect.width)
         self.rect.y = 0
         self.velocidad_x = 3*random.randint(-1, 1)
-        self.velocidad_y = random.randint(self.VELOCIDAD_Y_MIN_OBJETO, self.VELOCIDAD_Y_MAX_OBJETO)
+        self.velocidad_y = random.randint(self.VELOCIDAD_Y_MIN, self.VELOCIDAD_Y_MAX)
         
     def update(self):
         # Verificar que no se salga de los limites de la pantalla en el eje X
@@ -49,7 +49,15 @@ class Lata(pygame.sprite.Sprite):
             return False
     
     def asignar_numero(self):
-        self.number = random.randint(1,256)
+        self.number = random.randint(0,25)
+        font = pygame.font.SysFont("Arial", 30, bold=True)
+        texto_numero = font.render(str(self.number), 1, (255, 255, 255))
+        W = texto_numero.get_width()
+        H = texto_numero.get_height()
+        self.image.blit(texto_numero, [self.rect.width/2 - W/2, self.rect.height/2 - H/2 + 10])
+
+    def asignar_numero_correcto(self, num):
+        self.number = num
         font = pygame.font.SysFont("Arial", 30, bold=True)
         texto_numero = font.render(str(self.number), 1, (255, 255, 255))
         W = texto_numero.get_width()

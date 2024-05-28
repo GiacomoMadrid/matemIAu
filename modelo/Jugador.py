@@ -14,7 +14,7 @@ class Jugador(pygame.sprite.Sprite):
         self.SPRITE_JUGADOR_DERROTA = "imagenes/jugador_derrota.png"
         self.SPRITE_JUGADOR_VICTORIA = "imagenes/jugador_victoria.png" 
 
-        self.LISTA_NUMEROS_JUGADOR = [2, 3, 5, 7]
+        self.lista_operadores = ["+", "-"]
         self.GRAVEDAD = 2 # Gravedad (para los saltos)
 
         #Los archivos de efectos de sonido deben estar en formato .ogg
@@ -25,8 +25,12 @@ class Jugador(pygame.sprite.Sprite):
         self.rect.x = (Ventana().ANCHO_VENTANA)/2 - self.rect.width/2
         self.rect.y = Ventana().ALTO_VENTANA - self.rect.height
         self.velocidad_x = 0
-        self.velocidad_y = 0
-    
+        self.velocidad_y = 0     
+
+        self.operacion = str(random.randint(0, 10))+"+"+str(random.randint(0, 10))
+        self.respuesta = eval(self.operacion)
+        self.vida = 4
+
     def update(self):
         # Cambio de velocidad en el eje Y producto de la gravedad (para que caiga cuando salte)
         if self.rect.x <  Ventana().ANCHO_VENTANA - self.rect.width:
@@ -53,19 +57,28 @@ class Jugador(pygame.sprite.Sprite):
 
     def actualizar_sprite_victoria(self):
         self.image = pygame.image.load(self.SPRITE_JUGADOR_VICTORIA).convert_alpha()
+    
+    def asignar_opeacion(self):
+        self.image = pygame.image.load(self.SPRITE_JUGADOR).convert_alpha()
+        n = random.randint(0, 10)
+        m = random.randint(1,10)
+        
+        operador = random.choice(self.lista_operadores)
+        
+        if (operador == "+"):
+           self.operacion = str(n)+"+"+str(m)
+        else:
+            if(n >= m):
+                self.operacion = str(n)+"-"+str(m)
+            else:
+                self.operacion = str(m)+"-"+str(n)
+        
+        self.respuesta = eval(self.operacion)
 
-    def asignar_numero(self): # Se asigna el numero cuyos multiplos debemos buscar
-        # Numero
-        #self.number = random.randint(NUMERO_MIN_JUGADOR, NUMERO_MAX_JUGADOR)
-        self.number = random.choice(self.LISTA_NUMEROS_JUGADOR)
-        fuente = pygame.font.SysFont("Arial", 30, bold=True)
-        texto_numero = fuente.render(str(self.number), 1, (0,0,0))
-        W = texto_numero.get_width()
-        H = texto_numero.get_height()
-        self.image.blit(texto_numero, [self.rect.width/2 - W/2, self.rect.height/2 - H/3 +20])
+        fuente = pygame.font.SysFont("Arial", 22, bold=True)
+        texto_operacion = fuente.render(str(self.operacion), 1, (0,0,0))
+        W = texto_operacion.get_width()
+        H = texto_operacion.get_height()
+        self.image.blit(texto_operacion, [self.rect.width/2 - W/2, self.rect.height/2 - H/3 +20])
 
-        # Simbolo de multiplo
-        simbolo_multiplo = fuente.render("°", 1, (0,0,0))
-        W = simbolo_multiplo.get_width()
-        H = simbolo_multiplo.get_height()
-        self.image.blit(simbolo_multiplo, [self.rect.width/2 - W/2, self.rect.height/2 - 2*H/3 +20])
+        

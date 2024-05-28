@@ -38,7 +38,7 @@ class Controlador_Principal:
         self.lista_sprites = pygame.sprite.Group() 
 
         self.jugador = Jugador()
-        self.jugador.asignar_numero()
+        self.jugador.asignar_opeacion()
         self.lista_sprites.add(self.jugador) 
 
         self.tiempo_restante = self.TIEMPO_TOTAL+1 
@@ -73,14 +73,19 @@ class Controlador_Principal:
 
     def generar_latas(self):
         if self.game_over == None: # Verifica si el jugador aun no ha perdido ni ganado
-            if random.randint(1, 100)%23 == 0: # Genera numeros aleatorios del 1 al 100 y crea una lata cada que salga un multiplo de 43
+            if random.randint(1, 100)%50 == 0: # Genera numeros aleatorios del 1 al 100 y crea una lata cada que salga un multiplo de 43
                 lata = Lata()
-                lata.asignar_numero()
+                
+                if random.randint(1, 50)%3 == 0: #Posibiliades de que salga la lata correcta
+                    lata.asignar_numero_correcto(self.jugador.respuesta)
+                else:
+                    lata.asignar_numero()
+
                 self.lista_sprites.add(lata) # Se agrega el lata a la lista de sprites del juego 
                 
                 # Agrega la lata generada a la lista correspondiente
                 if self.es_lata_correcta(lata) == True:
-                    self.lista_latas_correctas.add(lata)
+                    self.lista_latas_correctas.add(lata)                    
                 else:
                     self.lista_latas_incorrectas.add(lata)
 
@@ -106,7 +111,7 @@ class Controlador_Principal:
                             self.__init__(self.vista) # Se reinicia el juego
     
     def es_lata_correcta(self, lata):
-        if lata.number%self.jugador.number == 0:
+        if lata.number == self.jugador.respuesta:
             return True
         else:
             return False
@@ -114,8 +119,10 @@ class Controlador_Principal:
     def detectar_colisiones(self):
         # Correctas
         lista_latas_colisionadas = pygame.sprite.spritecollide(self.jugador, self.lista_latas_correctas, True)
-
+        
         for lata in lista_latas_colisionadas:
+            self.jugador.asignar_opeacion() # Cada vez que aciertas una operacion, te dan una nueva
+
             if lata.es_dorada(): #Si agarras una lata dorada correcta, ganas 1 punto extra
                 self.puntuacion = self.puntuacion + 1
 
@@ -124,7 +131,7 @@ class Controlador_Principal:
 
             self.puntuacion = self.puntuacion + 1 # Aumenta el puntaje
             self.sonido_colision.play() # Reproduce el sonido de la colision
-            
+
         # Incorrectas
         lista_latas_colisionadas = pygame.sprite.spritecollide(self.jugador, self.lista_latas_incorrectas, True)
 
@@ -133,6 +140,8 @@ class Controlador_Principal:
             self.lista_sprites.remove(lata) # Se elimina de la lista de sprites (latas y jugador)
 
             self.puntuacion = self.puntuacion - 1 # Disminuye el puntaje
+            self.jugador.vida = self.jugador.vida -1 # Pierdes una vida
+            print("vidas: "+ str(self.jugador.vida))
             self.error_sound.play() # Reproduce el sonido de la colision
 
     def eliminar_latas_del_suelo(self):
@@ -161,20 +170,25 @@ class Controlador_Principal:
             # Verificar que el puntaje no sea menor a 0
             if self.puntuacion < 0:
                 self.puntuacion = 0
+            
+            # Verificar que la vida del jugador no sea menor a 0
+            if self.jugador.vida <= 0:
+                self.jugador.vida = 0
 
             # Si el jugador aun no ha ganado o perdido, verificamos que le pasa
             if self.game_over == None:
                 self.tiempo_restante = self.tiempo_restante - 0.02 # Actualizamos el tiempo
 
-                # Detecto si gana o pierde
-                if int(self.tiempo_restante) > 0: # Si el tiempo es mayor a cero (tiene tiempo)
+                # Detecto si gana o pierde                
+                if ((int(self.tiempo_restante) > 0) and self.jugador.vida > 0): # Si el tiempo es mayor a cero  y el jugador aun tiene vidas
                     if self.puntuacion >= self.PUNTUACION_MAXIMA: # Verifica si el score es mayor o igual a la puntuacion maxima o mas, en ese caso gana
                         self.game_over = False # No ha perdido, es decir ha ganado
                         # Se reproduce sonido de game over
                         pygame.mixer.music.load(self.MUSICA_VICTORIA)
                         pygame.mixer.music.play(-1)
                         self.jugador.actualizar_sprite_victoria()
-                else:
+
+                elif((int(self.tiempo_restante) <= 0) or self.jugador.vida <= 0): #Si el tiempo llega a 0 o el jugador ya no tiene vidas
                     self.game_over = True # Ha perdido
                     # Se reproduce sonido de game over
                     pygame.mixer.music.load(self.MUSICA_DERROTA)
@@ -183,7 +197,9 @@ class Controlador_Principal:
 
                 # Se escribe el resultado del juego en los archivos
                 self.guardar_resultados()
-    
+                
+                
+
     def guardar_resultados(self):
         fecha_actual = datetime.now()
         # Se abre el archivo results para escritura
