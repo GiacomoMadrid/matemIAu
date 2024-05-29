@@ -8,7 +8,7 @@ import cv2
 class Vida(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__() 
-        self.SPRITE_VIDA = ["imagenes/vida.png"]
+        self.SPRITE_VIDA = "imagenes/vida.png"
 
         #Los archivos de efectos de sonido deben estar en formato .ogg
         self.SONIDO_VIDA = "sonidos/coin.ogg" 

@@ -21,7 +21,7 @@ class Controlador_Principal:
         self.MUSICA_DERROTA = "musica/gameover.wav" 
 
         #Constantes Generales
-        self.TIEMPO_TOTAL = 30 # En segundos
+        self.TIEMPO_TOTAL = 60 # En segundos
         self.PUNTUACION_MAXIMA = 10 # Define cuándo gana el jugador
         self.VELOCIDAD_MOVIMIENTO = int(7) #Define la velocidad a la que se moverá el jugador
 
@@ -32,6 +32,7 @@ class Controlador_Principal:
         self.RELOJ = "imagenes/reloj.png"
         self.LOGO_LATA = "imagenes/puntuacion.png"
         self.LOGO_VIDA = "imagenes/vida_logo.png"
+        self.LOGO_ESCUDO = "imagenes/escudo_logo.png"
 
         #Atributos
         self.fondo = pygame.image.load(self.FONDO_1)
@@ -78,7 +79,7 @@ class Controlador_Principal:
 
     def generar_latas(self):
         if self.game_over == None: # Verifica si el jugador aun no ha perdido ni ganado
-            if random.randint(1, 100)%33 == 0: # Genera numeros aleatorios del 1 al 100 y crea una lata cada que salga un multiplo de 43
+            if random.randint(1, 50) == 27: # Genera numeros aleatorios del 1 al 100 y crea una lata cada que salga un multiplo de 35
                 lata = Lata()
                 
                 if random.randint(1, 50)%3 == 0: #Posibiliades de que salga la lata correcta
@@ -90,18 +91,17 @@ class Controlador_Principal:
                 
                 # Agrega la lata generada a la lista correspondiente
                 self.lista_latas.add(lata) 
-
                 
 
     def generar_objetos(self):
         if self.game_over == None: # Verifica si el jugador aun no ha perdido ni ganado
-            if random.randint(1, 200) == 100: # Genera numeros aleatorios del 1 al 200 y crea un chocolate cada que salga 100
+            if random.randint(1, 230) == 147: # Genera numeros aleatorios del 1 al 200 y crea un chocolate cada que salga 100
                 chocolate = Comida_dannina()                                
                 # Agrega el chocolate generado a las listas correspondientes
                 self.lista_sprites.add(chocolate)
                 self.lista_alimentos_danninos.add(chocolate) 
 
-            if random.randint(1, 500) == 50: # Genera numeros aleatorios del 1 al 500 y crea una vida cada que salga 500
+            if random.randint(1, 530) == 114: # Genera numeros aleatorios del 1 al 500 y crea una vida cada que salga 500
                 vida = Vida()                                
                 # Agrega la vida generada a las listas correspondientes
                 self.lista_sprites.add(vida)
@@ -150,6 +150,11 @@ class Controlador_Principal:
         for lata in lista_latas_colisionadas:
             if self.es_lata_correcta(lata): #Si la lata colisionada es correcta te suman 1 punto
                 self.puntuacion = self.puntuacion + 1
+                self.jugador.escudo = self.jugador.escudo + 1
+
+                if self.jugador.escudo > 3: # Verifica que no tengan mas de 3 escudos
+                    self.jugador.escudo = 3 
+
                 self.sonido_colision.play() # Reproduce el sonido de la colision
 
                 if lata.es_dorada(): #Si agarras una lata dorada correcta, ganas 1 punto extra
@@ -158,7 +163,14 @@ class Controlador_Principal:
                 self.jugador.asignar_opeacion() # Cada vez que aciertas una operacion, te dan una nueva
 
             else:
-                self.puntuacion = self.puntuacion - 1 #Si la lata colisionada es incorrecta, te quitan 1 punto
+                self.jugador.escudo = self.jugador.escudo - 1
+
+                if self.jugador.escudo < 0: # Verifica que no tengan menos de de 0 escudos
+                    self.jugador.escudo = 0
+
+                if self.jugador.escudo == 0:
+                    self.puntuacion = self.puntuacion - 1 #Si la lata colisionada es incorrecta, te quitan 1 punto
+                                
                 self.error_sound.play() # Reproduce el sonido de error
 
             self.lista_latas.remove(lata) # Se elimina de la lista de latas
@@ -279,13 +291,17 @@ class Controlador_Principal:
         logo_puntuacion = pygame.image.load(self.LOGO_LATA).convert_alpha()
         logo_vida = pygame.image.load(self.LOGO_VIDA).convert_alpha()
         texto_vida = fuente.render(str("{:02}".format(int(self.jugador.vida))), True, (0,0,0))
+        logo_escudo = pygame.image.load(self.LOGO_ESCUDO).convert_alpha()
+        texto_escudo = fuente.render(str("{:02}".format(int(self.jugador.escudo))), True, (0,0,0))
         
         self.vista.ventana.blit(logo_puntuacion, (20, self.vista.ALTO_VENTANA - 140))
         self.vista.ventana.blit(texto_puntuacion, (logo_puntuacion.get_width() + 30, self.vista.ALTO_VENTANA - 140))
         self.vista.ventana.blit(logo_reloj, (18, self.vista.ALTO_VENTANA - 100))        
         self.vista.ventana.blit(texto_tiempo, (logo_reloj.get_width() + 30, self.vista.ALTO_VENTANA - 95))
-        self.vista.ventana.blit(logo_vida, (18, self.vista.ALTO_VENTANA - 50))        
-        self.vista.ventana.blit(texto_vida, (logo_reloj.get_width() + 30, self.vista.ALTO_VENTANA - 50))
+        self.vista.ventana.blit(logo_vida, (18, self.vista.ALTO_VENTANA - 55))        
+        self.vista.ventana.blit(texto_vida, (logo_vida.get_width() + 30, self.vista.ALTO_VENTANA - 50))
+        self.vista.ventana.blit(logo_escudo, (150, self.vista.ALTO_VENTANA - 140))        
+        self.vista.ventana.blit(texto_escudo, (150 + logo_escudo.get_width() + 10, self.vista.ALTO_VENTANA - 140))
 
     def pausar_movimientos(self):
         for sprite in self.lista_sprites:

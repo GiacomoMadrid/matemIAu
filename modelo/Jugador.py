@@ -24,11 +24,12 @@ class Jugador(pygame.sprite.Sprite):
         self.rect.x = (Ventana().ANCHO_VENTANA)/2 - self.rect.width/2
         self.rect.y = (Ventana().ALTO_VENTANA)/2 - self.rect.height
         self.velocidad_x = 0
-        self.velocidad_y = 0     
+        self.velocidad_y = 0    
 
         self.operacion = str(random.randint(0, 10))+"+"+str(random.randint(0, 10))
         self.respuesta = eval(self.operacion)
-        self.vida = 4
+        self.vida = 4 
+        self.escudo = 3
 
     def update(self):        
         # Verificar que no se salga de los limites de la pantalla en el eje X
@@ -41,7 +42,7 @@ class Jugador(pygame.sprite.Sprite):
         
         # Verificar que no se salga de los limites superiores de la pantalla en el eje Y 
         if self.rect.y + self.velocidad_y < 0:
-            self.velocidad_y = 0
+            self.velocidad_y = 0        
 
         # Movimiento
         self.rect.x = self.rect.x + self.velocidad_x
