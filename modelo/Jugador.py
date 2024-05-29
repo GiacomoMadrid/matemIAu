@@ -15,7 +15,6 @@ class Jugador(pygame.sprite.Sprite):
         self.SPRITE_JUGADOR_VICTORIA = "imagenes/jugador_victoria.png" 
 
         self.lista_operadores = ["+", "-"]
-        self.GRAVEDAD = 2 # Gravedad (para los saltos)
 
         #Los archivos de efectos de sonido deben estar en formato .ogg
         self.SONIDO_MOVIMIENTO = "sonidos/motion.ogg" 
@@ -23,7 +22,7 @@ class Jugador(pygame.sprite.Sprite):
         self.image = pygame.image.load(self.SPRITE_JUGADOR).convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.x = (Ventana().ANCHO_VENTANA)/2 - self.rect.width/2
-        self.rect.y = Ventana().ALTO_VENTANA - self.rect.height
+        self.rect.y = (Ventana().ALTO_VENTANA)/2 - self.rect.height
         self.velocidad_x = 0
         self.velocidad_y = 0     
 
@@ -31,22 +30,18 @@ class Jugador(pygame.sprite.Sprite):
         self.respuesta = eval(self.operacion)
         self.vida = 4
 
-    def update(self):
-        # Cambio de velocidad en el eje Y producto de la gravedad (para que caiga cuando salte)
-        if self.rect.x <  Ventana().ANCHO_VENTANA - self.rect.width:
-            self.velocidad_y = self.velocidad_y + self.GRAVEDAD
-        
+    def update(self):        
         # Verificar que no se salga de los limites de la pantalla en el eje X
         if self.rect.x + self.velocidad_x < 0 or Ventana().ANCHO_VENTANA - self.rect.width < self.rect.x + self.velocidad_x:
             self.velocidad_x = 0
         
         # Verificar que no se salga de los limites inferiores de la pantalla en el eje Y
-        if Ventana().ALTO_VENTANA - self.rect.height < self.rect.y + self.velocidad_y:
+        if Ventana().ALTO_VENTANA - self.rect.height - 145 < self.rect.y + self.velocidad_y:
             self.velocidad_y = 0
         
         # Verificar que no se salga de los limites superiores de la pantalla en el eje Y 
         if self.rect.y + self.velocidad_y < 0:
-            self.velocidad_y = -self.velocidad_y
+            self.velocidad_y = 0
 
         # Movimiento
         self.rect.x = self.rect.x + self.velocidad_x
@@ -79,6 +74,6 @@ class Jugador(pygame.sprite.Sprite):
         texto_operacion = fuente.render(str(self.operacion), 1, (0,0,0))
         W = texto_operacion.get_width()
         H = texto_operacion.get_height()
-        self.image.blit(texto_operacion, [self.rect.width/2 - W/2, self.rect.height/2 - H/3 +20])
+        self.image.blit(texto_operacion, [self.rect.width/2 - W/2 - 10, self.rect.height/2 - H/3 +20])
 
         

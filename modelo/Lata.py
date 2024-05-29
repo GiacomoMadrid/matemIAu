@@ -15,8 +15,8 @@ class Lata(pygame.sprite.Sprite):
         self.SONIDO_LATA = "sonidos/coin.ogg" 
         self.SONIDO_ERROR = "sonidos/error.ogg" 
         
-        self.VELOCIDAD_Y_MIN = 2
-        self.VELOCIDAD_Y_MAX = 4
+        self.VELOCIDAD_Y_MIN = 1
+        self.VELOCIDAD_Y_MAX = 3
                 
         self.imagen_aleatoria = random.choice(self.SPRITES_LATAS)
         self.image = self.imagen_aleatoria.convert_alpha()
@@ -32,8 +32,8 @@ class Lata(pygame.sprite.Sprite):
             self.velocidad_x = -self.velocidad_x
         
         # Verificar que no se salga de los limites de la pantalla en el eje Y
-        if Ventana().ALTO_VENTANA - self.rect.width < self.rect.y + self.velocidad_y:
-            self.rect.y = Ventana().ALTO_VENTANA - self.rect.height
+        if Ventana().ALTO_VENTANA - self.rect.height- 150 < self.rect.y + self.velocidad_y:
+            self.rect.y = Ventana().ALTO_VENTANA - self.rect.height - 150
             self.velocidad_y = 0
         
         # Movimiento
@@ -41,14 +41,14 @@ class Lata(pygame.sprite.Sprite):
         self.rect.y = self.rect.y + self.velocidad_y
     
     def tocar_piso(self):
-        if self.rect.y == Ventana().ALTO_VENTANA - self.rect.height:
+        if self.rect.y == Ventana().ALTO_VENTANA - self.rect.height - 150:
             return True
         else:
             return False
     
     def asignar_numero(self):
         self.number = random.randint(0,25)
-        font = pygame.font.SysFont("Arial", 30, bold=True)
+        font = pygame.font.SysFont("Arial", 28, bold=True)
         texto_numero = font.render(str(self.number), 1, (255, 255, 255))
         W = texto_numero.get_width()
         H = texto_numero.get_height()

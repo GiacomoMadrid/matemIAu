@@ -18,7 +18,8 @@ class Webcam:
     def update(self):
         if self.stream is None:
             if self.os_name == "Windows":
-                self.stream = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+                #self.stream = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+                self.stream = cv2.VideoCapture(1, cv2.CAP_DSHOW)
             elif self.os_name == "Darwin": #macOS
                 self.stream = cv2.VideoCapture(0, cv2.CAP_AVFOUNDATION)
             else: # Linux
