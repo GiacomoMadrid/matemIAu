@@ -7,9 +7,7 @@ import cv2
 
 class Lata(pygame.sprite.Sprite):
     def __init__(self):
-        super().__init__() # Esto llama al constructor de la clase padre (Sprite)        
-        #self.image = pygame.image.load(random.choice(LISTA_LATAS)).convert_alpha() # Elije aleatoriamente un modelo de lata
-        
+        super().__init__() 
         self.LISTA_LATAS = ["imagenes/lata_1.png", "imagenes/lata_2.png", "imagenes/lata_3.png", "imagenes/lata_4.png", "imagenes/lata_dorada.png"]
         self.SPRITES_LATAS = [pygame.image.load(imagen) for imagen in self.LISTA_LATAS]
 
