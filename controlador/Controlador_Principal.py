@@ -21,8 +21,8 @@ class Controlador_Principal:
         self.MUSICA_DERROTA = "musica/gameover.wav" 
 
         #Constantes Generales
-        self.TIEMPO_TOTAL = 60 # En segundos
-        self.PUNTUACION_MAXIMA = 10 # Define cuándo gana el jugador
+        self.TIEMPO_TOTAL = 10 # En segundos
+        self.PUNTUACION_MAXIMA = 1 # Define cuándo gana el jugador
         self.VELOCIDAD_MOVIMIENTO = int(7) #Define la velocidad a la que se moverá el jugador
 
         #Logos e imagenes
@@ -79,7 +79,7 @@ class Controlador_Principal:
 
     def generar_latas(self):
         if self.game_over == None: # Verifica si el jugador aun no ha perdido ni ganado
-            if random.randint(1, 50) == 27: # Genera numeros aleatorios del 1 al 100 y crea una lata cada que salga un multiplo de 35
+            if random.randint(1, 100)%33 == 0: # Genera numeros aleatorios del 1 al 100 y crea una lata cada que salga un multiplo de 35
                 lata = Lata()
                 
                 if random.randint(1, 50)%3 == 0: #Posibiliades de que salga la lata correcta
@@ -151,7 +151,7 @@ class Controlador_Principal:
             if self.es_lata_correcta(lata): #Si la lata colisionada es correcta te suman 1 punto
                 self.puntuacion = self.puntuacion + 1
                 self.jugador.escudo = self.jugador.escudo + 1
-
+                self.tiempo_restante = self.tiempo_restante + 5 #Cada que acertes una, gagas 5 segundos
                 if self.jugador.escudo > 3: # Verifica que no tengan mas de 3 escudos
                     self.jugador.escudo = 3 
 
@@ -234,7 +234,7 @@ class Controlador_Principal:
 
             # Si el jugador aun no ha ganado o perdido, verificamos que le pasa
             if self.game_over == None:
-                self.tiempo_restante = self.tiempo_restante - 0.02 # Actualizamos el tiempo
+                self.tiempo_restante = self.tiempo_restante - 0.08 # Actualizamos el tiempo
 
                 # Detecto si gana o pierde                
                 if ((int(self.tiempo_restante) > 0) and self.jugador.vida > 0): # Si el tiempo es mayor a cero  y el jugador aun tiene vidas
@@ -284,6 +284,16 @@ class Controlador_Principal:
         return contador_victorias, contador_derrotas
 
     def mostrar_informacion(self): # Se muestra la informacion en tiempo real
+        #Victorias y derrotas:
+        font = pygame.font.SysFont('Comic Sans', 25, bold=True)
+        contador_victorias, contador_derrotas = self.leer_resultados()
+        text = font.render("Victorias: "+str(contador_victorias), True, (0,0,0))
+        self.vista.ventana.blit(text, [self.vista.ANCHO_VENTANA/2 + 130, self.vista.ALTO_VENTANA - 145])
+
+        text = font.render("Derrotas: "+str(contador_derrotas), True, (0,0,0))
+        self.vista.ventana.blit(text, [self.vista.ANCHO_VENTANA/2 + 130, self.vista.ALTO_VENTANA - 110])
+
+    
         fuente = pygame.font.SysFont('Showcard Gothic', 30, bold=False)
         texto_puntuacion = fuente.render(str(self.puntuacion)+" / "+str(self.PUNTUACION_MAXIMA), True, (0,0,0))
         texto_tiempo = fuente.render(str("{:02}".format(int(self.tiempo_restante))), True, (0,0,0))
@@ -294,14 +304,17 @@ class Controlador_Principal:
         logo_escudo = pygame.image.load(self.LOGO_ESCUDO).convert_alpha()
         texto_escudo = fuente.render(str("{:02}".format(int(self.jugador.escudo))), True, (0,0,0))
         
-        self.vista.ventana.blit(logo_puntuacion, (20, self.vista.ALTO_VENTANA - 140))
+        self.vista.ventana.blit(logo_puntuacion, (20, self.vista.ALTO_VENTANA - 142))
         self.vista.ventana.blit(texto_puntuacion, (logo_puntuacion.get_width() + 30, self.vista.ALTO_VENTANA - 140))
         self.vista.ventana.blit(logo_reloj, (18, self.vista.ALTO_VENTANA - 100))        
         self.vista.ventana.blit(texto_tiempo, (logo_reloj.get_width() + 30, self.vista.ALTO_VENTANA - 95))
-        self.vista.ventana.blit(logo_vida, (18, self.vista.ALTO_VENTANA - 55))        
-        self.vista.ventana.blit(texto_vida, (logo_vida.get_width() + 30, self.vista.ALTO_VENTANA - 50))
-        self.vista.ventana.blit(logo_escudo, (150, self.vista.ALTO_VENTANA - 140))        
-        self.vista.ventana.blit(texto_escudo, (150 + logo_escudo.get_width() + 10, self.vista.ALTO_VENTANA - 140))
+        self.vista.ventana.blit(logo_vida, (180, self.vista.ALTO_VENTANA - 145))        
+        self.vista.ventana.blit(texto_vida, (180 + logo_vida.get_width() + 10, self.vista.ALTO_VENTANA - 140))
+        self.vista.ventana.blit(logo_escudo, (25, self.vista.ALTO_VENTANA - 50))        
+        self.vista.ventana.blit(texto_escudo, (25 + logo_escudo.get_width() + 10, self.vista.ALTO_VENTANA - 50))
+
+        #Reglas:
+
 
     def pausar_movimientos(self):
         for sprite in self.lista_sprites:
@@ -333,41 +346,35 @@ class Controlador_Principal:
         
         if self.game_over == False: #Si se gano el juego
             self.fondo = pygame.image.load(self.FONDO_VICTORIA)
-            font = pygame.font.SysFont('Comic Sans', 30, bold=True)
+            font = pygame.font.SysFont('Comic Sans', 40, bold=True)
             text = font.render("¡Ganaste!", True, (255,255,255))
             # Posicion del texto
             text_x = self.vista.ANCHO_VENTANA/2 - text.get_width()/2
             text_y = 50 + text.get_height()/2
-            self.vista.ventana.blit(text, [text_x, text_y-40])
-            
+            self.vista.ventana.blit(text, [text_x, text_y+20])
+                        
+            font = pygame.font.SysFont('Comic Sans', 25, bold=True)
             contador_victorias, contador_derrotas = self.leer_resultados()
             text = font.render("Presiona ENTER para continuar :)", True, (255,255,255))
-            self.vista.ventana.blit(text, [text_x-180, text_y+10])
+            self.vista.ventana.blit(text, [text_x-100, self.vista.ALTO_VENTANA - 200])
             
-            contador_victorias, contador_derrotas = self.leer_resultados()
-            text = font.render("Victorias: "+str(contador_victorias)+" | Derrotas: "+str(contador_derrotas), True, (255,255,255))
-            self.vista.ventana.blit(text, [text_x-100, text_y+50])
-
             # Se pausa el movimiento para todos los elementos del juego
             self.pausar_movimientos()
 
         elif self.game_over == True: #Si se perdio el juego
             self.fondo = pygame.image.load(self.FONDO_DERROTA)
-            font = pygame.font.SysFont('Comic Sans', 30, bold=True)
+            font = pygame.font.SysFont('Comic Sans', 40, bold=True)
             text = font.render("GAME OVER", True, (255,255,255))
+
             # Posicion del texto
             text_x = self.vista.ANCHO_VENTANA/2 - text.get_width()/2
             text_y = 50 + text.get_height()/2
-            self.vista.ventana.blit(text, [text_x, text_y-40])
+            self.vista.ventana.blit(text, [text_x, text_y+20])
             
-            contador_victorias, contador_derrotas = self.leer_resultados()
+            font = pygame.font.SysFont('Comic Sans', 25, bold=True)
             text = font.render("Presiona ENTER para continuar.", True, (255,255,255))
-            self.vista.ventana.blit(text, [text_x-120, text_y+10])
-
-            contador_victorias, contador_derrotas = self.leer_resultados()
-            text = font.render("Victorias: "+str(contador_victorias)+" | Derrotas: "+str(contador_derrotas), True, (255,255,255))
-            self.vista.ventana.blit(text, [text_x-100, text_y+50])
-
+            self.vista.ventana.blit(text, [text_x-80, self.vista.ALTO_VENTANA - 200])
+            
             # Se pausa el movimiento para todos los elementos del juego
             self.pausar_movimientos()
 
