@@ -14,8 +14,8 @@ class Comida_dannina(pygame.sprite.Sprite):
         # Los efectos de sonido deben estaren formato .ogg
         self.SONIDO_ERROR = "sonidos/error.ogg"
 
-        self.VELOCIDAD_Y_MIN = 1
-        self.VELOCIDAD_Y_MAX = 2
+        self.VELOCIDAD_Y_MIN = 2
+        self.VELOCIDAD_Y_MAX = 3
 
         self.imagen_aleatoria = random.choice(self.SPRITES_COMIDA)
         self.image = self.imagen_aleatoria.convert_alpha()

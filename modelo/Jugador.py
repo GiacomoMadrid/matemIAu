@@ -53,6 +53,9 @@ class Jugador(pygame.sprite.Sprite):
 
     def actualizar_sprite_victoria(self):
         self.image = pygame.image.load(self.SPRITE_JUGADOR_VICTORIA).convert_alpha()
+
+    def reiniciar_sprite(self):
+        self.image = pygame.image.load(self.SPRITE_JUGADOR).convert_alpha()
     
     def asignar_opeacion(self):
         self.image = pygame.image.load(self.SPRITE_JUGADOR).convert_alpha()

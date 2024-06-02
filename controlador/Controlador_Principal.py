@@ -5,38 +5,58 @@ from modelo.Lata import Lata
 from modelo.webcam import Webcam
 from modelo.comida_dannina import Comida_dannina
 from modelo.Vida import Vida
+from modelo.Nivel import Nivel
 import mediapipe as mp
 import pygame, random
 import numpy as np
 import cv2
+import os
 
 
 class Controlador_Principal:
     def __init__(self, Ventana):
         self.vista = Ventana
-        
+    
         #Los archivos de musica deben estar en formato .wav
         self.MUSICA_JUEGO = "musica/music.wav" 
         self.MUSICA_VICTORIA = "musica/winner.wav" 
         self.MUSICA_DERROTA = "musica/gameover.wav" 
 
         #Constantes Generales
-        self.TIEMPO_TOTAL = 10 # En segundos
-        self.PUNTUACION_MAXIMA = 1 # Define cuándo gana el jugador
-        self.VELOCIDAD_MOVIMIENTO = int(7) #Define la velocidad a la que se moverá el jugador
+        self.ACELERACION = 1
+        self.TIEMPO_TOTAL = 60 # En segundos
+        self.PUNTUACION_GANADORA = 3 # Define cuándo gana el jugador
+        self.VELOCIDAD_MOVIMIENTO = 10 # Define la velocidad a la que se moverá el jugador
+        self.TIEMPO_EXTRA = 10 # Define el tiempo extra que 
 
         #Logos e imagenes
         self.FONDO_VICTORIA = "imagenes/fondo_victoria.png"
         self.FONDO_DERROTA = "imagenes/fondo_derrota.png"
         self.FONDO_1 = "imagenes/fondo_dia.png" 
+
         self.RELOJ = "imagenes/reloj.png"
         self.LOGO_LATA = "imagenes/puntuacion.png"
         self.LOGO_VIDA = "imagenes/vida_logo.png"
         self.LOGO_ESCUDO = "imagenes/escudo_logo.png"
 
-        #Atributos
-        self.fondo = pygame.image.load(self.FONDO_1)
+        #Atributos        
+        self.NIVEL_INICIAL = 1 # Siempre se inicia desde el nivel 1
+
+        self.nivel = Nivel(
+            self.NIVEL_INICIAL,
+            self.FONDO_1,
+            self.FONDO_VICTORIA,
+            self.FONDO_DERROTA,
+            1,
+            3,
+            self.TIEMPO_TOTAL,
+            self.TIEMPO_EXTRA,
+
+        )
+
+        self.fondo = pygame.image.load(self.nivel.FONDO)
         self.reloj_fps = pygame.time.Clock()
+
         self.lista_latas = pygame.sprite.Group() #Suben puntos
         self.lista_alimentos_danninos = pygame.sprite.Group() #Quitan vida        
         self.lista_vidas = pygame.sprite.Group() #Otorgan vida
@@ -45,12 +65,14 @@ class Controlador_Principal:
         self.jugador = Jugador()
         self.jugador.asignar_opeacion()
         self.lista_sprites.add(self.jugador) 
-
-        self.tiempo_restante = self.TIEMPO_TOTAL+1 
-        self.puntuacion = 0 
+        
+        self.tiempo_restante = self.nivel.TIEMPO_TOTAL+1 
+        self.puntuacion = 0 #Puntuacion que lleva durante un nivel
+        self.puntuacion_total = 0 #Puntuacion Total durante todo el juego
+        self.puntuacion_maxima = self.leer_puntuacion_maxima()
 
         self.juego_iniciado = True 
-        self.game_over = None 
+        self.game_over = None         
 
         self.sonido_colision = pygame.mixer.Sound(Lata().SONIDO_LATA)
         self.sonido_movimiento = pygame.mixer.Sound(Jugador().SONIDO_MOVIMIENTO)
@@ -79,10 +101,11 @@ class Controlador_Principal:
 
     def generar_latas(self):
         if self.game_over == None: # Verifica si el jugador aun no ha perdido ni ganado
-            if random.randint(1, 100)%33 == 0: # Genera numeros aleatorios del 1 al 100 y crea una lata cada que salga un multiplo de 35
-                lata = Lata()
-                
-                if random.randint(1, 50)%3 == 0: #Posibiliades de que salga la lata correcta
+            if random.randint(1, 100)%33 == 0: # Genera numeros aleatorios del 1 al 100 y crea una lata cada que salga un multiplo de 33
+                lata = Lata()                
+                lata.velocidad_y = random.randint(self.nivel.VELOCIDAD_MIN, self.nivel.VELOCIDAD_MAX)
+
+                if random.randint(1, 20)%3 == 0: # Posibiliades de que salga la lata correcta
                     lata.asignar_numero_correcto(self.jugador.respuesta)
                 else:
                     lata.asignar_numero()
@@ -96,13 +119,17 @@ class Controlador_Principal:
     def generar_objetos(self):
         if self.game_over == None: # Verifica si el jugador aun no ha perdido ni ganado
             if random.randint(1, 230) == 147: # Genera numeros aleatorios del 1 al 200 y crea un chocolate cada que salga 100
-                chocolate = Comida_dannina()                                
+                chocolate = Comida_dannina()
+                chocolate.velocidad_y = random.randint(self.nivel.VELOCIDAD_MIN, self.nivel.VELOCIDAD_MAX)
+                             
                 # Agrega el chocolate generado a las listas correspondientes
                 self.lista_sprites.add(chocolate)
                 self.lista_alimentos_danninos.add(chocolate) 
 
-            if random.randint(1, 530) == 114: # Genera numeros aleatorios del 1 al 500 y crea una vida cada que salga 500
-                vida = Vida()                                
+            if random.randint(1, 1330) == 114: # Genera numeros aleatorios del 1 al 1330 y crea una vida cada que salga 114
+                vida = Vida()
+                vida.velocidad_y = random.randint(self.nivel.VELOCIDAD_MIN, self.nivel.VELOCIDAD_MAX)
+                             
                 # Agrega la vida generada a las listas correspondientes
                 self.lista_sprites.add(vida)
                 self.lista_vidas.add(vida) 
@@ -118,24 +145,57 @@ class Controlador_Principal:
                 if self.game_over == None: 
                     if event.key == pygame.K_LEFT:
                         self.jugador.velocidad_x = -1*self.VELOCIDAD_MOVIMIENTO
-                        self.sonido_movimiento.play() # Se reproduce el sonido de movimiento
+                        self.jugador.velocidad_y = 0
+                        self.sonido_movimiento.play() # Se reproduce el sonido de movimiento                       
+
                     if event.key == pygame.K_RIGHT:
                         self.jugador.velocidad_x = self.VELOCIDAD_MOVIMIENTO
+                        self.jugador.velocidad_y = 0
                         self.sonido_movimiento.play() # Se reproduce el sonido de movimiento
+
                     if event.key == pygame.K_UP:
                         self.jugador.velocidad_y = -1*self.VELOCIDAD_MOVIMIENTO
+                        self.jugador.velocidad_x = 0
                         self.sonido_movimiento.play() # Se reproduce el sonido de movimiento
+
                     if event.key == pygame.K_DOWN:
-                        self.jugador.velocidad_y = self.VELOCIDAD_MOVIMIENTO
+                        self.jugador.velocidad_y = self.VELOCIDAD_MOVIMIENTO                        
+                        self.jugador.velocidad_x = 0
                         self.sonido_movimiento.play() # Se reproduce el sonido de movimiento
+
+                    #Diagonales:
+                    if event.key == pygame.K_UP and event.key == pygame.K_LEFT:                            
+                            self.jugador.velocidad_y = self.VELOCIDAD_MOVIMIENTO
+                            self.jugador.velocidad_x = -1*self.VELOCIDAD_MOVIMIENTO
+
+                    if event.key == pygame.K_DOWN and event.key == pygame.K_LEFT: 
+                        self.jugador.velocidad_y = -1*self.VELOCIDAD_MOVIMIENTO
+                        self.jugador.velocidad_x = -1*self.VELOCIDAD_MOVIMIENTO
+
+                    if event.key == pygame.K_UP and event.key == pygame.K_RIGHT: 
+                        self.jugador.velocidad_y = self.VELOCIDAD_MOVIMIENTO
+                        self.jugador.velocidad_x = self.VELOCIDAD_MOVIMIENTO
+
+                    if event.key == pygame.K_DOWN and event.key == pygame.K_RIGHT: 
+                        self.jugador.velocidad_y = -1*self.VELOCIDAD_MOVIMIENTO
+                        self.jugador.velocidad_x = self.VELOCIDAD_MOVIMIENTO
+
                 else: # Aqui se analiza el caso contrario, es decir cuando gano o perdio. Solo debe esperar el ENTER del usuario
                     self.jugador.velocidad_x = 0
                     self.jugador.velocidad_y = 0
 
                     if event.key == pygame.K_RETURN: # Verifica si presiona ENTER
-                        if self.game_over != None: # Verifica si el jugador ha perdido o ha ganado (diferente de None)
-                            self.__init__(self.vista) # Se reinicia el juego
-                    
+                        if self.game_over == True: # Si el jugador perdio, se acaba el juego
+                            self.escribir_puntuacion_maxima()
+                            if(self.jugador.vida <= 0):
+                                self.__init__(self.vista) # Se reinicia el juego
+                            
+                            else:
+                                self.reiniciar_nivel() # Si todavia le quedan vidas reinicia el nivel
+                        
+                        else: #Si el jugador gano, aumenta el nivel
+                            self.aumentar_nivel()
+                            
 
 
     def es_lata_correcta(self, lata):
@@ -150,27 +210,23 @@ class Controlador_Principal:
         for lata in lista_latas_colisionadas:
             if self.es_lata_correcta(lata): #Si la lata colisionada es correcta te suman 1 punto
                 self.puntuacion = self.puntuacion + 1
-                self.jugador.escudo = self.jugador.escudo + 1
-                self.tiempo_restante = self.tiempo_restante + 5 #Cada que acertes una, gagas 5 segundos
-                if self.jugador.escudo > 3: # Verifica que no tengan mas de 3 escudos
-                    self.jugador.escudo = 3 
-
+                self.puntuacion_total = self.puntuacion_total +1
+                self.tiempo_restante = self.tiempo_restante + self.nivel.TIEMPO_EXTRA #Cada que acertes una, ganas segundos extras
                 self.sonido_colision.play() # Reproduce el sonido de la colision
 
                 if lata.es_dorada(): #Si agarras una lata dorada correcta, ganas 1 punto extra
                     self.puntuacion = self.puntuacion + 1
+                    self.puntuacion_total = self.puntuacion_total +1
 
                 self.jugador.asignar_opeacion() # Cada vez que aciertas una operacion, te dan una nueva
 
             else:
                 self.jugador.escudo = self.jugador.escudo - 1
-
-                if self.jugador.escudo < 0: # Verifica que no tengan menos de de 0 escudos
-                    self.jugador.escudo = 0
-
+                
                 if self.jugador.escudo == 0:
                     self.puntuacion = self.puntuacion - 1 #Si la lata colisionada es incorrecta, te quitan 1 punto
-                                
+                    self.jugador.escudo = 3 # Y se reinicia el contador de escudos, de modo que cada 3 errores te quiten 1 punto
+
                 self.error_sound.play() # Reproduce el sonido de error
 
             self.lista_latas.remove(lata) # Se elimina de la lista de latas
@@ -189,6 +245,7 @@ class Controlador_Principal:
         lista_vidas_colisionadas = pygame.sprite.spritecollide(self.jugador, self.lista_vidas, True)
         for vida in lista_vidas_colisionadas:
             self.jugador.vida = self.jugador.vida + 1
+            self.puntuacion_total = self.puntuacion_total +2
             self.sonido_colision.play() # Reproduce el sonido de la colision
 
             self.lista_alimentos_danninos.remove(vida) # Se elimina de la lista de latas
@@ -217,6 +274,9 @@ class Controlador_Principal:
        
     def iniciar_logica(self):
         if self.juego_iniciado == True: # Se verifica que el juego este iniciado
+            #Puntuacion maxima
+            self.puntuacion_maxima = self.leer_puntuacion_maxima()
+
             # Actualizar sprites
             self.lista_sprites.update()
 
@@ -236,15 +296,19 @@ class Controlador_Principal:
             if self.game_over == None:
                 self.tiempo_restante = self.tiempo_restante - 0.08 # Actualizamos el tiempo
 
-                # Detecto si gana o pierde                
+                # Si gana               
                 if ((int(self.tiempo_restante) > 0) and self.jugador.vida > 0): # Si el tiempo es mayor a cero  y el jugador aun tiene vidas
-                    if self.puntuacion >= self.PUNTUACION_MAXIMA: # Verifica si el score es mayor o igual a la puntuacion maxima o mas, en ese caso gana
+                    if self.puntuacion >= self.PUNTUACION_GANADORA: # Verifica si el score es mayor o igual a la puntuacion maxima o mas, en ese caso gana
+                        if(self.puntuacion > self.PUNTUACION_GANADORA): #Si pasa un nivel con mayor puntuacion a la maxima, gana una vida extra
+                            self.jugador.vida = self.jugador.vida + 1     
+
                         self.game_over = False # No ha perdido, es decir ha ganado
                         # Se reproduce sonido de game over
                         pygame.mixer.music.load(self.MUSICA_VICTORIA)
                         pygame.mixer.music.play(-1)
-                        self.jugador.actualizar_sprite_victoria()
-
+                        self.jugador.actualizar_sprite_victoria()                        
+                
+                # Si pierde
                 elif((int(self.tiempo_restante) <= 0) or self.jugador.vida <= 0): #Si el tiempo llega a 0 o el jugador ya no tiene vidas
                     self.game_over = True # Ha perdido
                     # Se reproduce sonido de game over
@@ -257,7 +321,7 @@ class Controlador_Principal:
                 
     def guardar_resultados(self):
         fecha_actual = datetime.now()
-        # Se abre el archivo results para escritura
+        # Se abre el archivo resultados para escritura
         archivo = open("resultados.txt", "a")
         # Se escribe el resultado en el archivo
         if self.game_over == False:
@@ -266,9 +330,10 @@ class Controlador_Principal:
             archivo.write("Derrota: ,"+fecha_actual.strftime("%Y/%m/%d %H:%M:%S")+"\n")
         # Se cierra el archivo
         archivo.close()
+        
     
     def leer_resultados(self):
-        # Se abre el archivo results para lectura
+        # Se abre el archivo resultados para lectura
         archivo = open("resultados.txt", "r")
         # Se inicializan los contadores
         contador_victorias = 0
@@ -283,19 +348,50 @@ class Controlador_Principal:
         # Se retornan los resultados
         return contador_victorias, contador_derrotas
 
+    def leer_puntuacion_maxima(self):               
+        nombre_archivo = "puntajes.txt"
+        #Se abre el archivo puntaje.txt en modo lectura
+        try:            
+            with open(nombre_archivo, "r") as archivo:
+                texto = archivo.readline().strip()                
+                if texto:                  
+                    return int(texto) # Retorna el puntaje encontrado
+                else:
+                    return 0 # Retorna 0 si el archivo esta vacio
+                
+        #En caso no se encuentre el archivo, retorna 0
+        except FileNotFoundError:
+            return 0
+        except IOError:
+            return 0
+        except ValueError:
+            return 0
+    
+    def escribir_puntuacion_maxima(self):
+        #Se abre/crea el archivo en modo escritura:        
+        with open("puntajes.txt", "w") as archivo:
+        #Se sobreescribe el puntaje si el puntaje obtenido es mayor al puntaje maximo
+            if self.puntuacion_total >= self.puntuacion_maxima:
+                archivo.write(str(self.puntuacion_total))
+                archivo.close()
+            else:
+                archivo.write(str(self.puntuacion_maxima))
+                archivo.close()
+
+        
     def mostrar_informacion(self): # Se muestra la informacion en tiempo real
         #Victorias y derrotas:
-        font = pygame.font.SysFont('Comic Sans', 25, bold=True)
+        font = pygame.font.SysFont('Comic Sans', 20, bold=True)
         contador_victorias, contador_derrotas = self.leer_resultados()
         text = font.render("Victorias: "+str(contador_victorias), True, (0,0,0))
-        self.vista.ventana.blit(text, [self.vista.ANCHO_VENTANA/2 + 130, self.vista.ALTO_VENTANA - 145])
+        self.vista.ventana.blit(text, [self.vista.ANCHO_VENTANA/2 + 130, self.vista.ALTO_VENTANA - 120])
 
         text = font.render("Derrotas: "+str(contador_derrotas), True, (0,0,0))
-        self.vista.ventana.blit(text, [self.vista.ANCHO_VENTANA/2 + 130, self.vista.ALTO_VENTANA - 110])
-
+        self.vista.ventana.blit(text, [self.vista.ANCHO_VENTANA/2 + 130, self.vista.ALTO_VENTANA - 95])
     
+        #Informacion del Jugador
         fuente = pygame.font.SysFont('Showcard Gothic', 30, bold=False)
-        texto_puntuacion = fuente.render(str(self.puntuacion)+" / "+str(self.PUNTUACION_MAXIMA), True, (0,0,0))
+        texto_puntuacion = fuente.render(str(self.puntuacion)+" / "+str(self.PUNTUACION_GANADORA), True, (0,0,0))
         texto_tiempo = fuente.render(str("{:02}".format(int(self.tiempo_restante))), True, (0,0,0))
         logo_reloj = pygame.image.load(self.RELOJ).convert_alpha()
         logo_puntuacion = pygame.image.load(self.LOGO_LATA).convert_alpha()
@@ -313,8 +409,21 @@ class Controlador_Principal:
         self.vista.ventana.blit(logo_escudo, (25, self.vista.ALTO_VENTANA - 50))        
         self.vista.ventana.blit(texto_escudo, (25 + logo_escudo.get_width() + 10, self.vista.ALTO_VENTANA - 50))
 
-        #Reglas:
+        #Nivel:
+        texto_nivel = font.render("Nivel: "+str(self.nivel.nombre), True, (0,0,0))
+        self.vista.ventana.blit(texto_nivel, [self.vista.ANCHO_VENTANA/2 + 130, self.vista.ALTO_VENTANA - 145])
 
+        #Puntaje Maximo:
+        texto_puntaje = font.render("Puntaje Total: "+str(self.puntuacion_total), True, (0,0,0))
+        self.vista.ventana.blit(texto_puntaje, [self.vista.ANCHO_VENTANA/2 + 130, self.vista.ALTO_VENTANA - 70])
+        
+        if self.puntuacion_total < self.puntuacion_maxima:
+            texto_puntaje = font.render("Puntaje Max: "+str(self.puntuacion_maxima), True, (0,0,0))
+            self.vista.ventana.blit(texto_puntaje, [self.vista.ANCHO_VENTANA/2 + 130, self.vista.ALTO_VENTANA - 45])
+        else:
+            texto_puntaje = font.render("Puntaje Max: "+str(self.puntuacion_total), True, (0,0,0))
+            self.vista.ventana.blit(texto_puntaje, [self.vista.ANCHO_VENTANA/2 + 130, self.vista.ALTO_VENTANA - 45])
+       
 
     def pausar_movimientos(self):
         for sprite in self.lista_sprites:
@@ -345,7 +454,7 @@ class Controlador_Principal:
         self.mostrar_informacion() # Se dibujan los textos (puntos y tiempo)
         
         if self.game_over == False: #Si se gano el juego
-            self.fondo = pygame.image.load(self.FONDO_VICTORIA)
+            self.fondo = pygame.image.load(self.nivel.FONDO_VICTORIA)
             font = pygame.font.SysFont('Comic Sans', 40, bold=True)
             text = font.render("¡Ganaste!", True, (255,255,255))
             # Posicion del texto
@@ -362,9 +471,15 @@ class Controlador_Principal:
             self.pausar_movimientos()
 
         elif self.game_over == True: #Si se perdio el juego
-            self.fondo = pygame.image.load(self.FONDO_DERROTA)
-            font = pygame.font.SysFont('Comic Sans', 40, bold=True)
-            text = font.render("GAME OVER", True, (255,255,255))
+            if(self.jugador.vida <= 0): #Si ya no quedan vidas
+                self.fondo = pygame.image.load(self.nivel.FONDO_DERROTA)
+                font = pygame.font.SysFont('Comic Sans', 40, bold=True)
+                text = font.render("GAME OVER", True, (255,255,255))
+
+            else: #Si aun quedan vidas
+                self.fondo = pygame.image.load(self.nivel.FONDO_DERROTA)
+                font = pygame.font.SysFont('Comic Sans', 40, bold=True)
+                text = font.render("¡Perdiste!", True, (255,255,255))
 
             # Posicion del texto
             text_x = self.vista.ANCHO_VENTANA/2 - text.get_width()/2
@@ -372,7 +487,7 @@ class Controlador_Principal:
             self.vista.ventana.blit(text, [text_x, text_y+20])
             
             font = pygame.font.SysFont('Comic Sans', 25, bold=True)
-            text = font.render("Presiona ENTER para continuar.", True, (255,255,255))
+            text = font.render("Presiona ENTER para continuar.", True, (255,255,255))            
             self.vista.ventana.blit(text, [text_x-80, self.vista.ALTO_VENTANA - 200])
             
             # Se pausa el movimiento para todos los elementos del juego
@@ -380,6 +495,93 @@ class Controlador_Principal:
 
         pygame.display.flip() # Se actualiza el display
     
+
+    def aumentar_nivel(self):        
+        #Se oculta el texto de victoria: 
+        self.puntuacion = 0        
+        self.puntuacion_total = self.puntuacion_total +10
+        self.game_over = None
+        self.juego_iniciado = True
+        self.VELOCIDAD_MOVIMIENTO = self.VELOCIDAD_MOVIMIENTO + 0.3
+
+        #Se actualizan los datos del nivel
+        self.nivel.nombre = self.nivel.nombre + 1
+        self.nivel.FONDO = self.FONDO_1
+        self.nivel.FONDO_VICTORIA = self.FONDO_VICTORIA
+        self.nivel.FONDO_DERROTA = self.FONDO_DERROTA
+
+        self.nivel.VELOCIDAD_MIN = self.nivel.VELOCIDAD_MIN + self.ACELERACION
+        self.nivel.VELOCIDAD_MAX = self.nivel.VELOCIDAD_MAX + self.ACELERACION
+        self.nivel.TIEMPO_TOTAL = self.nivel.TIEMPO_TOTAL - 1
+        if(self.nivel.TIEMPO_TOTAL < 30): #El tiempo total no puede ser menor a 30 segundos
+            self.nivel.TIEMPO_TOTAL = 30
+
+        self.nivel.TIEMPO_EXTRA = self.nivel.TIEMPO_EXTRA - 1
+        if(self.nivel.TIEMPO_EXTRA < 0): #El tiempo extra no puede ser negativo
+            self.nivel.TIEMPO_EXTRA = 0
+
+        #Se actualizan los datos del jugador
+        self.jugador.vida = self.jugador.vida + 1 #El jugador gana una vida por pasar el nivel
+        self.jugador.escudo = 3 # Se reinician los escudos del jugador
+        self.jugador.reiniciar_sprite() # Se reinicia el sprite del jugador
+        self.jugador.asignar_opeacion() # Se asigna una operacion
+
+        #Se quitan los objetos de las listas
+        for lata in self.lista_latas:
+            self.lista_sprites.remove(lata) 
+            self.lista_latas.remove(lata) 
+        
+        for objeto in self.lista_alimentos_danninos:
+            self.lista_sprites.remove(objeto) 
+            self.lista_alimentos_danninos.remove(objeto)
+
+        for objeto in self.lista_vidas:
+            self.lista_sprites.remove(objeto) 
+            self.lista_vidas.remove(objeto)
+
+        #Se reinicia la música del juego
+        pygame.mixer.music.load(self.MUSICA_JUEGO)
+        pygame.mixer.music.play(-1)
+                
+        self.PUNTUACION_GANADORA = self.nivel.PUNTUACION_GANADORA
+        self.fondo = pygame.image.load(self.nivel.FONDO)
+        self.tiempo_restante = self.nivel.TIEMPO_TOTAL
+        self.TIEMPO_EXTRA = self.nivel.TIEMPO_EXTRA
+        self.escribir_puntuacion_maxima()
+        
+    def reiniciar_nivel(self):        
+        #Se oculta el texto de victoria: 
+        self.puntuacion = 0
+        self.game_over = None
+        self.juego_iniciado = True        
+
+        #Se actualizan los datos del jugador
+        self.jugador.vida = self.jugador.vida - 1 #El jugador pierde una vida por perder el nivel
+        self.jugador.escudo = 3 # Se reinician los escudos del jugador
+        self.jugador.reiniciar_sprite() # Se reinicia el sprite del jugador
+        self.jugador.asignar_opeacion() # Se asigna una operacion
+
+        #Se quitan los objetos de las listas
+        for lata in self.lista_latas:
+            self.lista_sprites.remove(lata) 
+            self.lista_latas.remove(lata) 
+        
+        for objeto in self.lista_alimentos_danninos:
+            self.lista_sprites.remove(objeto) 
+            self.lista_alimentos_danninos.remove(objeto)
+
+        for objeto in self.lista_vidas:
+            self.lista_sprites.remove(objeto) 
+            self.lista_vidas.remove(objeto)
+
+        #Se reinicia la música del juego
+        pygame.mixer.music.load(self.MUSICA_JUEGO)
+        pygame.mixer.music.play(-1)
+                
+        self.fondo = pygame.image.load(self.nivel.FONDO)    
+        self.tiempo_restante = self.nivel.TIEMPO_TOTAL    
+    
+
     def point_in_box(self, p, box):
         x, y, w, h = box[0], box[1], box[2], box[3]
         if x<p[0] and p[0]<x+w and y<p[1] and p[1]<y+h:
@@ -464,24 +666,28 @@ class Controlador_Principal:
     def detect_hands_movement(self, fingers, box_up, box_left, box_right, box_down):
         if self.fingers_in_box(fingers, box_up) == True:
             self.jugador.velocidad_y = -1*self.VELOCIDAD_MOVIMIENTO
+            self.jugador.velocidad_x = 0
             self.alpha_up = 0.2
         else:
             self.alpha_up = 0.5
 
         if self.fingers_in_box(fingers, box_down) == True:
             self.jugador.velocidad_y = self.VELOCIDAD_MOVIMIENTO
+            self.jugador.velocidad_x = 0
             self.box_down = 0.2
         else:
             self.box_down = 0.5
 
         if self.fingers_in_box(fingers, box_left) == True:
             self.jugador.velocidad_x = -1*self.VELOCIDAD_MOVIMIENTO
+            self.jugador.velocidad_y = 0
             self.alpha_left = 0.2
         else:
             self.alpha_left = 0.5
         
         if self.fingers_in_box(fingers, box_right) == True:
             self.jugador.velocidad_x = self.VELOCIDAD_MOVIMIENTO
+            self.jugador.velocidad_y = 0
             self.alpha_right = 0.2
         else:
             self.alpha_right = 0.5
