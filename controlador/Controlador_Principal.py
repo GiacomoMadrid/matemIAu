@@ -24,7 +24,7 @@ class Controlador_Principal:
 
         #Constantes Generales
         self.ACELERACION = 1
-        self.TIEMPO_TOTAL = 60 # En segundos
+        self.TIEMPO_TOTAL = 10 # En segundos
         self.PUNTUACION_GANADORA = 3 # Define cuándo gana el jugador
         self.VELOCIDAD_MOVIMIENTO = 10 # Define la velocidad a la que se moverá el jugador
         self.TIEMPO_EXTRA = 10 # Define el tiempo extra que 
@@ -454,16 +454,39 @@ class Controlador_Principal:
         self.mostrar_informacion() # Se dibujan los textos (puntos y tiempo)
         
         if self.game_over == False: #Si se gano el juego
-            self.fondo = pygame.image.load(self.nivel.FONDO_VICTORIA)
-            font = pygame.font.SysFont('Comic Sans', 40, bold=True)
-            text = font.render("¡Ganaste!", True, (255,255,255))
-            # Posicion del texto
+            self.fondo = pygame.image.load(self.nivel.FONDO_VICTORIA) 
+            
+            font = pygame.font.SysFont('Comic Sans', 40, bold=True)            
+            text = font.render("¡Ganaste!", True, (255,255,255))  
+
             text_x = self.vista.ANCHO_VENTANA/2 - text.get_width()/2
             text_y = 50 + text.get_height()/2
+
+            text = font.render("¡Ganaste!", True, (0,0,0))
+            self.vista.ventana.blit(text, [text_x-3, text_y+20])
+            text = font.render("¡Ganaste!", True, (0,0,0))
+            self.vista.ventana.blit(text, [text_x+3, text_y+20])         
+            text = font.render("¡Ganaste!", True, (255,255,255))              
             self.vista.ventana.blit(text, [text_x, text_y+20])
                         
             font = pygame.font.SysFont('Comic Sans', 25, bold=True)
             contador_victorias, contador_derrotas = self.leer_resultados()
+            text = font.render("Maya está feliz :3", True, (0,0,0))
+            self.vista.ventana.blit(text, [text_x-28, text_y+100])
+            text = font.render("Presiona ENTER para continuar :)", True, (0,0,0))
+            self.vista.ventana.blit(text, [text_x-103, self.vista.ALTO_VENTANA - 200])
+
+            font = pygame.font.SysFont('Comic Sans', 25, bold=True)
+            contador_victorias, contador_derrotas = self.leer_resultados()
+            text = font.render("Maya está feliz :3", True, (0,0,0))
+            self.vista.ventana.blit(text, [text_x-22, text_y+100])
+            text = font.render("Presiona ENTER para continuar :)", True, (0,0,0))
+            self.vista.ventana.blit(text, [text_x-97, self.vista.ALTO_VENTANA - 200])
+
+            font = pygame.font.SysFont('Comic Sans', 25, bold=True)
+            contador_victorias, contador_derrotas = self.leer_resultados()
+            text = font.render("Maya está feliz :3", True, (255,255,255))
+            self.vista.ventana.blit(text, [text_x-25, text_y+100])
             text = font.render("Presiona ENTER para continuar :)", True, (255,255,255))
             self.vista.ventana.blit(text, [text_x-100, self.vista.ALTO_VENTANA - 200])
             
@@ -471,23 +494,46 @@ class Controlador_Principal:
             self.pausar_movimientos()
 
         elif self.game_over == True: #Si se perdio el juego
+            self.fondo = pygame.image.load(self.nivel.FONDO_DERROTA)  
+
             if(self.jugador.vida <= 0): #Si ya no quedan vidas
-                self.fondo = pygame.image.load(self.nivel.FONDO_DERROTA)
                 font = pygame.font.SysFont('Comic Sans', 40, bold=True)
-                text = font.render("GAME OVER", True, (255,255,255))
+                text = font.render("GAME OVER", True, (255,255,255))   
+
+                # Posicion del texto
+                text_x = self.vista.ANCHO_VENTANA/2 - text.get_width()/2
+                text_y = 50 + text.get_height()/2             
+
+                text = font.render("GAME OVER", True, (0,0,0))                
+                self.vista.ventana.blit(text, [text_x-3, text_y+20])
+                text = font.render("GAME OVER", True, (0,0,0))                
+                self.vista.ventana.blit(text, [text_x+3, text_y+20])       
+                text = font.render("GAME OVER", True, (255,255,255))              
+                self.vista.ventana.blit(text, [text_x, text_y+20])
 
             else: #Si aun quedan vidas
                 self.fondo = pygame.image.load(self.nivel.FONDO_DERROTA)
                 font = pygame.font.SysFont('Comic Sans', 40, bold=True)
-                text = font.render("¡Perdiste!", True, (255,255,255))
+                text = font.render("¡Perdiste!", True, (255,255,255))    
 
-            # Posicion del texto
-            text_x = self.vista.ANCHO_VENTANA/2 - text.get_width()/2
-            text_y = 50 + text.get_height()/2
-            self.vista.ventana.blit(text, [text_x, text_y+20])
+                # Posicion del texto
+                text_x = self.vista.ANCHO_VENTANA/2 - text.get_width()/2
+                text_y = 50 + text.get_height()/2             
+                            
+                text = font.render("¡Perdiste!", True, (0,0,0))               
+                self.vista.ventana.blit(text, [text_x-3, text_y+20])
+                text = font.render("¡Perdiste!", True, (0,0,0))               
+                self.vista.ventana.blit(text, [text_x+3, text_y+20])
+                text = font.render("¡Perdiste!", True, (255,255,255))                       
+                self.vista.ventana.blit(text, [text_x, text_y+20])
+
             
             font = pygame.font.SysFont('Comic Sans', 25, bold=True)
-            text = font.render("Presiona ENTER para continuar.", True, (255,255,255))            
+            text = font.render("Presiona ENTER para continuar.", True, (0,0,0))            
+            self.vista.ventana.blit(text, [text_x-77, self.vista.ALTO_VENTANA - 200])
+            text = font.render("Presiona ENTER para continuar.", True, (0,0,0))
+            self.vista.ventana.blit(text, [text_x-83, self.vista.ALTO_VENTANA - 200])
+            text = font.render("Presiona ENTER para continuar.", True, (255,255,255))
             self.vista.ventana.blit(text, [text_x-80, self.vista.ALTO_VENTANA - 200])
             
             # Se pausa el movimiento para todos los elementos del juego

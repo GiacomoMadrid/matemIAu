@@ -14,9 +14,9 @@ class Ventana:
         self.ALTO_VENTANA = 600
 
         icono = pygame.image.load(self.ICONO_VENTANA)
-        pygame.display.set_icon(icono)
 
         self.ventana = pygame.display.set_mode([self.ANCHO_VENTANA, self.ALTO_VENTANA])
+        pygame.display.set_icon(icono)
         
 
     
