@@ -24,8 +24,8 @@ class Controlador_Principal:
 
         #Constantes Generales
         self.ACELERACION = 1
-        self.TIEMPO_TOTAL = 10 # En segundos
-        self.PUNTUACION_GANADORA = 3 # Define cuándo gana el jugador
+        self.TIEMPO_TOTAL = 60 # En segundos
+        self.PUNTUACION_GANADORA = 10 # Define cuándo gana el jugador
         self.VELOCIDAD_MOVIMIENTO = 10 # Define la velocidad a la que se moverá el jugador
         self.TIEMPO_EXTRA = 10 # Define el tiempo extra que 
 

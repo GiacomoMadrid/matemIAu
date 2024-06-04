@@ -37,6 +37,6 @@ class Nivel:
 
         #Generalidades:        
         self.nombre = id
-        self.PUNTUACION_GANADORA = 3 # Define cuándo gana el jugador  
+        self.PUNTUACION_GANADORA = 10 # Define cuándo gana el jugador  
 
 

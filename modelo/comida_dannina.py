@@ -8,7 +8,7 @@ class Comida_dannina(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
 
-        self.LISTA_COMIDA = ["imagenes/chocolate_1.png", "imagenes/chocolate_2.png", "imagenes/chocolate_3.png", "imagenes/chocolate_4.png"]
+        self.LISTA_COMIDA = ["imagenes/espinazo_1.png","imagenes/chocolate_1.png", "imagenes/chocolate_2.png"]
         self.SPRITES_COMIDA = [pygame.image.load(imagen) for imagen in self.LISTA_COMIDA]
 
         # Los efectos de sonido deben estaren formato .ogg
