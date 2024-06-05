@@ -101,11 +101,11 @@ class Controlador_Principal:
 
     def generar_latas(self):
         if self.game_over == None: # Verifica si el jugador aun no ha perdido ni ganado
-            if random.randint(1, 100)%33 == 0: # Genera numeros aleatorios del 1 al 100 y crea una lata cada que salga un multiplo de 33
+            if random.randint(1, 80) == 50: # Genera numeros aleatorios del 1 al 100 y crea una lata cada que salga un multiplo de 33
                 lata = Lata()                
                 lata.velocidad_y = random.randint(self.nivel.VELOCIDAD_MIN, self.nivel.VELOCIDAD_MAX)
 
-                if random.randint(1, 20)%3 == 0: # Posibiliades de que salga la lata correcta
+                if random.randint(1, 3) == 3: # Posibiliades de que salga la lata correcta
                     lata.asignar_numero_correcto(self.jugador.respuesta)
                 else:
                     lata.asignar_numero()
@@ -186,7 +186,10 @@ class Controlador_Principal:
 
                     if event.key == pygame.K_RETURN: # Verifica si presiona ENTER
                         if self.game_over == True: # Si el jugador perdio, se acaba el juego
+                            #Se actualizan los datos del jugador
+                            self.jugador.vida = self.jugador.vida - 1 #El jugador pierde una vida por perder el nivel
                             self.escribir_puntuacion_maxima()
+                            
                             if(self.jugador.vida <= 0):
                                 self.__init__(self.vista) # Se reinicia el juego
                             
@@ -602,7 +605,7 @@ class Controlador_Principal:
         self.juego_iniciado = True        
 
         #Se actualizan los datos del jugador
-        self.jugador.vida = self.jugador.vida - 1 #El jugador pierde una vida por perder el nivel
+        #self.jugador.vida = self.jugador.vida - 1 #El jugador pierde una vida por perder el nivel
         self.jugador.escudo = 3 # Se reinician los escudos del jugador
         self.jugador.reiniciar_sprite() # Se reinicia el sprite del jugador
         self.jugador.asignar_opeacion() # Se asigna una operacion
