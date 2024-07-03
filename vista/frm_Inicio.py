@@ -50,12 +50,12 @@ class Frm_Inicial:
         self.ventana.blit(self.logo_btn_jugar, [self.ANCHO_VENTANA/2, self.ALTO_VENTANA/2 + 120])
         
 
-    def play(self, personaje):
-        self.ventana.fill('black')
-        pygame.display.set_caption("MatemIAu con "+personaje)
-        vista = Ventana()
-        controlador_principal = Controlador_Principal(vista)
-        controlador_principal.run()
+    #def play(self, personaje):
+        #self.ventana.fill('black')
+        #pygame.display.set_caption("MatemIAu con "+personaje)
+        #vista = Ventana()
+        #controlador_principal = Controlador_Principal(vista)
+        #controlador_principal.run()
         
 
     def restaurar_logos(self):
