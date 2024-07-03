@@ -100,8 +100,8 @@ class Controlador_Principal:
         self.face_bottom_y = 0
 
     def generar_latas(self):
-        if self.game_over == None: # Verifica si el jugador aun no ha perdido ni ganado
-            if random.randint(1, 80) == 50: # Genera numeros aleatorios del 1 al 100 y crea una lata cada que salga un multiplo de 33
+        if self.game_over == None and len(self.lista_sprites) <= 10: # Verifica si el jugador aun no ha perdido ni ganado y que no hayan más de 10 sprites en el juego
+            if random.randint(1, 50) == 50: # Genera numeros aleatorios del 1 al 50 y crea una lata cada que salga un multiplo de 33
                 lata = Lata()                
                 lata.velocidad_y = random.randint(self.nivel.VELOCIDAD_MIN, self.nivel.VELOCIDAD_MAX)
 
@@ -117,7 +117,7 @@ class Controlador_Principal:
                 
 
     def generar_objetos(self):
-        if self.game_over == None: # Verifica si el jugador aun no ha perdido ni ganado
+        if self.game_over == None and len(self.lista_sprites) <= 10: # Verifica si el jugador aun no ha perdido ni ganado y que no hayan más de 10 sprites en el juego
             if random.randint(1, 230) == 147: # Genera numeros aleatorios del 1 al 200 y crea un chocolate cada que salga 100
                 chocolate = Comida_dannina()
                 chocolate.velocidad_y = random.randint(self.nivel.VELOCIDAD_MIN, self.nivel.VELOCIDAD_MAX)
@@ -148,37 +148,24 @@ class Controlador_Principal:
                         self.jugador.velocidad_y = 0
                         self.sonido_movimiento.play() # Se reproduce el sonido de movimiento                       
 
-                    if event.key == pygame.K_RIGHT:
+                    elif event.key == pygame.K_RIGHT:
                         self.jugador.velocidad_x = self.VELOCIDAD_MOVIMIENTO
                         self.jugador.velocidad_y = 0
                         self.sonido_movimiento.play() # Se reproduce el sonido de movimiento
 
-                    if event.key == pygame.K_UP:
+                    elif event.key == pygame.K_UP:
                         self.jugador.velocidad_y = -1*self.VELOCIDAD_MOVIMIENTO
                         self.jugador.velocidad_x = 0
                         self.sonido_movimiento.play() # Se reproduce el sonido de movimiento
 
-                    if event.key == pygame.K_DOWN:
+                    elif event.key == pygame.K_DOWN:
                         self.jugador.velocidad_y = self.VELOCIDAD_MOVIMIENTO                        
                         self.jugador.velocidad_x = 0
                         self.sonido_movimiento.play() # Se reproduce el sonido de movimiento
 
-                    #Diagonales:
-                    if event.key == pygame.K_UP and event.key == pygame.K_LEFT:                            
-                            self.jugador.velocidad_y = self.VELOCIDAD_MOVIMIENTO
-                            self.jugador.velocidad_x = -1*self.VELOCIDAD_MOVIMIENTO
-
-                    if event.key == pygame.K_DOWN and event.key == pygame.K_LEFT: 
-                        self.jugador.velocidad_y = -1*self.VELOCIDAD_MOVIMIENTO
-                        self.jugador.velocidad_x = -1*self.VELOCIDAD_MOVIMIENTO
-
-                    if event.key == pygame.K_UP and event.key == pygame.K_RIGHT: 
-                        self.jugador.velocidad_y = self.VELOCIDAD_MOVIMIENTO
-                        self.jugador.velocidad_x = self.VELOCIDAD_MOVIMIENTO
-
-                    if event.key == pygame.K_DOWN and event.key == pygame.K_RIGHT: 
-                        self.jugador.velocidad_y = -1*self.VELOCIDAD_MOVIMIENTO
-                        self.jugador.velocidad_x = self.VELOCIDAD_MOVIMIENTO
+                    else:
+                        self.jugador.velocidad_x = 0            
+                        self.jugador.velocidad_y = 0
 
                 else: # Aqui se analiza el caso contrario, es decir cuando gano o perdio. Solo debe esperar el ENTER del usuario
                     self.jugador.velocidad_x = 0
@@ -717,28 +704,25 @@ class Controlador_Principal:
             self.jugador.velocidad_y = -1*self.VELOCIDAD_MOVIMIENTO
             self.jugador.velocidad_x = 0
             self.alpha_up = 0.2
-        else:
-            self.alpha_up = 0.5
-
-        if self.fingers_in_box(fingers, box_down) == True:
+        
+        elif self.fingers_in_box(fingers, box_down) == True:
             self.jugador.velocidad_y = self.VELOCIDAD_MOVIMIENTO
             self.jugador.velocidad_x = 0
             self.box_down = 0.2
-        else:
-            self.box_down = 0.5
-
-        if self.fingers_in_box(fingers, box_left) == True:
+        
+        elif self.fingers_in_box(fingers, box_left) == True:
             self.jugador.velocidad_x = -1*self.VELOCIDAD_MOVIMIENTO
             self.jugador.velocidad_y = 0
             self.alpha_left = 0.2
-        else:
-            self.alpha_left = 0.5
         
-        if self.fingers_in_box(fingers, box_right) == True:
+        elif self.fingers_in_box(fingers, box_right) == True:
             self.jugador.velocidad_x = self.VELOCIDAD_MOVIMIENTO
             self.jugador.velocidad_y = 0
             self.alpha_right = 0.2
+        
         else:
+            self.jugador.velocidad_x = 0
+            self.jugador.velocidad_y = 0
             self.alpha_right = 0.5
    
     def render_camera(self):
