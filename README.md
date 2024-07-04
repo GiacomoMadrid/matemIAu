@@ -12,23 +12,19 @@ Una vez instalado, proceda a instalarle la extensión para Python de VS-Code de 
          
 ### 3) Crear un entorno virtual:
 ###### 3.1) Luego de haber instalado Python 3.9.0 y VS-Code de manera exitosa, abra una terminal en VS-Code del símbolo del sistema en la ubicación de la raíz de las carpetas del programa.
-###### 3.2) Asegúrese de tener pip instalado con el comando: 
- 
+###### 3.2) Asegúrese de tener pip instalado con el comando:  
 
     pip --version. 
          
-###### 3.2) En la linea de comandos escriba el siguiente comando para instalar el entorno virtual:
- 
+###### 3.2) En la linea de comandos escriba el siguiente comando para instalar el entorno virtual: 
 
     pip install virtualenv 
          
 ###### 3.3) Escriba el siguiente comando **reemplazando [ruta]** por la ruta donde se encuentra instalado Python 3.9.0 y **[nombre]** por el nombre que desee colocarle al entorno virtual (por ejemplo: venv):
- 
 
     virtualenv -p "[ruta]" [nombre]
   
 ###### 3.4) Una vez creado el entorno escriba el siguiente comando (Windows) para activar el entorno:
- 
 
     .\venv\Scripts\activate
   
